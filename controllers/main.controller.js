@@ -28,6 +28,10 @@ const updateTask = async (req, res) => {
     const { id } = req.params;
     const { task, completed } = req.body;
 
+    if(!task && !completed){
+     return res.status(203).json({ message: "a task or its status is required to update, please try again" })
+    }
+
     await Task.findByIdAndUpdate(id, { task, completed });
 
     // 204 will not return json data
