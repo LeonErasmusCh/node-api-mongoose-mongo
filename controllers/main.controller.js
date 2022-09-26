@@ -1,60 +1,60 @@
-const { request } = require("http");
+const Task = require('../models/task')
 
-let tasks = [ {
-    "id": 1,
-    "task": "eat"
-},
-{
-    "id": 2,
-    "task": "sleep"
-}
-];
 
-const getData = (request, response) => {
-    return response.status(200).json({ tasks: tasks })
+
+const tasks = async (req, res) => {
+    const tasks = await Task.find({})
+
+    return res.status(200).json({
+        status: 'Success',
+        message: 'Tasks List',
+        data: tasks
+    })
 }
 
-const getById = (request, response) =>{
-    const id = request.params.id
-    const taskById = tasks.find(x => x.id == parseInt(id))
-    return response.status(200).json(taskById)
-}
-
-const postData = (request, response) => {
-    const task = request.body
-    tasks.push(task)
-     return response.status(200).json({ "task received": task })
-}
-
-const updateData = (request, response) => {
-    const task = request.body
-    for(let i = 0; i < tasks.length; i++){
-        if(tasks[i].id == task.id){
-            tasks.splice(tasks[i], 1)
-            tasks.push({id: request.body.id, task: request.body.task})
-        }
-    }
-    return response.status(200).json({ 'Task updated with id': task.id})
-}
-
-const deleteData = (request, response) => {
-    const id = request.params.id
-    for(let i = 0; i < tasks.length; i++){
-        if(tasks[i].id === parseInt(id)){
-            tasks.splice(tasks[i].id -1 , 1)
-        }
-    }
-
-    return response.status(200).json({ 'Task Deleted with id': id})
+const createTask = async (req, res) => {
+    const { task, completed } = req.body;
+    const newTask = await Task.create({ task, completed });
+    const data = await newTask.save()
+    return res.status(201).json({
+        status: 'Success',
+        message: 'Task Created',
+        data: data
+    })
 }
 
 
+const updateTask = async (req, res) => {
+    const { id } = req.params;
+    const { task, completed } = req.body;
+
+    await Task.findByIdAndUpdate(id, { task, completed });
+
+    // 204 will not return json data
+    return res.status(204).json({
+        status: 'Success',
+        message: 'Task Updated',
+        data: null
+    })
+}
+
+
+const deleteTask = async (req, res) => {
+    const { id } = req.params;
+
+    await Task.findByIdAndDelete(id);
+
+    return res.status(200).json({
+        status: 'Success',
+        message: `Task Deleted with id ${id}`,
+        data: null
+    })
+}
 
 
 module.exports = {
-    getData,
-    getById,
-    postData,
-    updateData,
-    deleteData
+    tasks,
+    createTask,
+    updateTask,
+    deleteTask
 }
